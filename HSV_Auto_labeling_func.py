@@ -5,43 +5,84 @@ from os import listdir
 from os.path import isfile, join
 import copy
 
-img_path = './Dataset Medical Waste/Mask/'
+img_path = './Dataset Medical Waste/black/'
 
-diff_thres_h = 70  #0-359
-diff_thres_s = 200  #0-255 
-diff_thres_v = 120   #0-255 
 alpha_value = .7 # 0.1-1
 
+mean_black = np.array([26,11,53])
+mean_white = np.array([50,13,117])
+mean_green_cam = np.array([110,191,122])
+mean_green_mobile = np.array([119,191,101])
+
+diff_thres_black = np.array([50,80,100]) # [70,110,40]  # [0-359,0-255,0-255] <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+diff_thres_white = np.array([70,120,50])  # [0-359,0-255,0-255] <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+diff_thres_green_cam = np.array([70,110,40])  # [0-359,0-255,0-255] <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+diff_thres_green_mobile = np.array([70,120,50])  # [0-359,0-255,0-255] <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+
+
 def pointBG(src_img):
-    global diff_thres_h,diff_thres_s,diff_thres_v
+    global mean_black,mean_white,mean_green_cam,mean_green_mobile
+    global diff_thres_black,diff_thres_white,diff_thres_cam,diff_thres_mobile
     list_hists = []
     img = src_img.copy()
     # calc HSV hist
+    hsv_planes = cv.split(img)
     for i in range(0,3):
         if(i==0): #H
-            histr = cv.calcHist(img,[i],None,[360],[0,360])
+            histr = cv.calcHist(hsv_planes,[i],None,[360],[0,360])
         elif(i==1): #S
-            histr = cv.calcHist(img,[i],None,[256],[0,256])
+            histr = cv.calcHist(hsv_planes,[i],None,[256],[0,256])
         elif(i==2): #V
-            histr = cv.calcHist(img,[i],None,[256],[0,256])
+            histr = cv.calcHist(hsv_planes,[i],None,[256],[0,256])
         list_hists.append(histr)
     list_hists_np = np.array(list_hists,dtype=object)
     max_h = np.unravel_index(np.argmax(list_hists_np[0], axis=None), list_hists_np[0].shape)
     max_s = np.unravel_index(np.argmax(list_hists_np[1], axis=None), list_hists_np[1].shape)
     max_v = np.unravel_index(np.argmax(list_hists_np[2], axis=None), list_hists_np[2].shape)
-    print(f"(max_h={max_h},max_s={max_s},max_v={max_v}")
-    low_H = np.int16(np.clip(max_h[0] - diff_thres_h,0,359)).item()
-    low_S = np.int16(np.clip(max_s[0] - diff_thres_s,0,255)).item()
-    low_V = np.int16(np.clip(max_v[0] - diff_thres_v,0,255)).item()
-    high_H = np.int16(max_h[0] + diff_thres_h).item()
-    high_S = np.int16(max_s[0] + diff_thres_s).item()
-    high_V = np.int16(max_v[0] + diff_thres_v).item()
+    #print(f"(max_h={max_h},max_s={max_s},max_v={max_v}")
+    #print(f"{max_h[0]}\t{max_s[0]}\t{max_v[0]}")
+    peak_HSV = np.array([max_h[0],max_s[0],max_v[0]])
+    #print(peak_HSV)
+    # หาค่าความแตกต่างระหว่างสีของภาพ และค่าเฉลี่ยพื้นหลังของแต่ละสี
+    diffBG = np.array([sum(abs(mean_black-peak_HSV)),sum(abs(mean_white-peak_HSV)),sum(abs(mean_green_cam-peak_HSV)),sum(abs(mean_green_mobile-peak_HSV))])
+    idxMatchedBG = np.unravel_index(np.argmin(diffBG, axis=None), diffBG.shape)[0]
+    #dict_bg = {0:"Black",1:"White",2:"GreenCam",3:"GreenMobile"}
+    #print(dict_bg[idxMatchedBG])
+    if(idxMatchedBG==0):
+        low_H = np.int16(np.clip(max_h[0] - diff_thres_black[0],0,359)).item()
+        low_S = np.int16(np.clip(max_s[0] - diff_thres_black[1],0,255)).item()
+        low_V = np.int16(np.clip(max_v[0] - diff_thres_black[2],0,255)).item()
+        high_H = np.int16(max_h[0] + diff_thres_black[0]).item()
+        high_S = np.int16(max_s[0] + diff_thres_black[1]).item()
+        high_V = np.int16(max_v[0] + diff_thres_black[2]).item()
+    elif(idxMatchedBG==1):
+        low_H = np.int16(np.clip(max_h[0] - diff_thres_white[0],0,359)).item()
+        low_S = np.int16(np.clip(max_s[0] - diff_thres_white[1],0,255)).item()
+        low_V = np.int16(np.clip(max_v[0] - diff_thres_white[2],0,255)).item()
+        high_H = np.int16(max_h[0] + diff_thres_white[0]).item()
+        high_S = np.int16(max_s[0] + diff_thres_white[1]).item()
+        high_V = np.int16(max_v[0] + diff_thres_white[2]).item()
+    elif(idxMatchedBG==2):
+        low_H = np.int16(np.clip(max_h[0] - diff_thres_green_cam[0],0,359)).item()
+        low_S = np.int16(np.clip(max_s[0] - diff_thres_green_cam[1],0,255)).item()
+        low_V = np.int16(np.clip(max_v[0] - diff_thres_green_cam[2],0,255)).item()
+        high_H = np.int16(max_h[0] + diff_thres_green_cam[0]).item()
+        high_S = np.int16(max_s[0] + diff_thres_green_cam[1]).item()
+        high_V = np.int16(max_v[0] + diff_thres_green_cam[2]).item()
+    else:
+        low_H = np.int16(np.clip(max_h[0] - diff_thres_green_mobile[0],0,359)).item()
+        low_S = np.int16(np.clip(max_s[0] - diff_thres_green_mobile[1],0,255)).item()
+        low_V = np.int16(np.clip(max_v[0] - diff_thres_green_mobile[2],0,255)).item()
+        high_H = np.int16(max_h[0] + diff_thres_green_mobile[0]).item()
+        high_S = np.int16(max_s[0] + diff_thres_green_mobile[1]).item()
+        high_V = np.int16(max_v[0] + diff_thres_green_mobile[2]).item()
+
     lowerb = (low_H, low_S, low_V)
     upperb = (high_H, high_S, high_V)
     lowerb = (low_H, low_S, low_V)
     upperb = (high_H, high_S, high_V)
-    print(f"lowerb{lowerb}")
-    print(f"upperb{upperb}")
+    #print(f"lowerb{lowerb}")
+    #print(f"upperb{upperb}")
     threshold_img = cv.inRange(img, lowerb, upperb)
     return threshold_img
 
@@ -53,7 +94,7 @@ def main():
     for i,fname in enumerate(list_files):
         last = len(fname) - 1
         file_ext = fname[-3:]
-        if(file_ext!='jpg'): # and file_ext!='JPG'
+        if(file_ext!='JPG' and file_ext!='jpg'): # and file_ext!='JPG'
             del_lists.append(fname) # mark as delete
             #print(file_ext)
     for val in del_lists:
@@ -80,6 +121,7 @@ def main():
     pointBG_imgs = []
     for i,img in enumerate(HSV_imgs):
         pointBG_imgs.append(pointBG(img))
+        cv.imwrite(img_path+"/seg/"+list_files[i]+"_segment.jpg",pointBG_imgs[i])
     
     # Display by plt
     plt_index = 1
