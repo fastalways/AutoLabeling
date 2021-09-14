@@ -14,10 +14,10 @@ mean_white = np.array([50,13,117])
 mean_green_cam = np.array([110,191,122])
 mean_green_mobile = np.array([119,191,101])
 
-diff_thres_black = np.array([50,80,100]) # [70,110,40]  # [0-359,0-255,0-255] <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-diff_thres_white = np.array([70,120,50])  # [0-359,0-255,0-255] <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-diff_thres_green_cam = np.array([70,110,40])  # [0-359,0-255,0-255] <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
-diff_thres_green_mobile = np.array([70,120,50])  # [0-359,0-255,0-255] <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+diff_thres_black = np.array([350,40,20]) # [70,110,40]  # [0-359,0-255,0-255] <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+diff_thres_white = np.array([80,40,20])  # [0-359,0-255,0-255] <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+diff_thres_green_cam = np.array([40,100,20])  # [0-359,0-255,0-255] <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+diff_thres_green_mobile = np.array([45,60,40])  # [0-359,0-255,0-255] <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
 
 def pointBG(src_img):
@@ -83,8 +83,46 @@ def pointBG(src_img):
     upperb = (high_H, high_S, high_V)
     #print(f"lowerb{lowerb}")
     #print(f"upperb{upperb}")
-    threshold_img = cv.inRange(img, lowerb, upperb)
-    return threshold_img
+    inrange_img = cv.inRange(img, lowerb, upperb)
+    detected_color = idxMatchedBG #{0:"Black",1:"White",2:"GreenCam",3:"GreenMobile"}
+    return inrange_img, detected_color
+
+def locateBG(inrange_img,color):
+    kernel_ELLIPSE_2x2 = cv.getStructuringElement(cv.MORPH_ELLIPSE,(2,2))
+    _,thres_img = cv.threshold(inrange_img,127,255,cv.THRESH_BINARY_INV)
+    if(color != 1): #if color is not White will not be eroded
+        thres_img = cv.erode(thres_img,kernel_ELLIPSE_2x2,iterations=1)
+    contours, _ = cv.findContours(thres_img, cv.RETR_EXTERNAL, cv.CHAIN_APPROX_SIMPLE)
+    OBJS_RECT = []
+    OBJS_CENTER = []
+    IMG_CENTER = [inrange_img.shape[1]//2,inrange_img.shape[0]//2] # [x_center, y_center]
+    OBJS_DIFF_CENTER = []
+    # reject small contour (noise)
+    for i,cnt in enumerate(contours):
+        x,y,w,h = cv.boundingRect(cnt)
+        if(w>=5 and h>=5):
+            OBJS_RECT.append([x,y,w,h]) # [x,y,w,h]
+            obj_center = [ (x+(w//2)) , (y+(h//2)) ]
+            OBJS_CENTER.append(obj_center) # [x_obj_center, y_obj_center]
+            OBJS_DIFF_CENTER.append(abs(IMG_CENTER[0]-obj_center[0])+abs(IMG_CENTER[1]-obj_center[1])) # diff = [ X_IMG_CENTER - x_obj_center, Y_IMG_CENTER - y_obj_center]
+    middlest_RECT = []
+    if(len(OBJS_RECT)==1):
+        middlest_RECT = OBJS_RECT[0]
+    elif (len(OBJS_RECT)>1):
+        min_middle = 0
+        for i,RECT in enumerate(OBJS_RECT):
+            if(OBJS_DIFF_CENTER[i]< min_middle):
+                min_middle = OBJS_DIFF_CENTER[i]
+                middlest_RECT = RECT
+    else :
+        middlest_RECT = [IMG_CENTER[0]] ################# << เขียนถึงนี้
+
+    
+    
+    
+
+    return thres_img
+    
 
 
 def main():
@@ -118,15 +156,24 @@ def main():
     for i,img in enumerate(lowct_imgs):
         HSV_imgs.append(cv.cvtColor(img, cv.COLOR_BGR2HSV_FULL))
     # Call func pointBG
-    pointBG_imgs = []
+    inrange_imgs = []
+    detected_colors = []
     for i,img in enumerate(HSV_imgs):
-        pointBG_imgs.append(pointBG(img))
-        cv.imwrite(img_path+"/seg/"+list_files[i]+"_segment.jpg",pointBG_imgs[i])
+        tmp_point_img,tmp_color = pointBG(img)
+        inrange_imgs.append(tmp_point_img)
+        detected_colors.append(tmp_color)
+
+    locateBG_imgs = []
+    for i,img in enumerate(inrange_imgs):
+        color = detected_colors[i]
+        locateBG_imgs.append(locateBG(img,color))
+        cv.imwrite(img_path+"/seg/"+list_files[i]+"_segment.jpg",locateBG_imgs[i])
     
     # Display by plt
     plt_index = 1
     num_imgs = len(imgs)
-    col = 3
+    col = 4
+    plt.rcParams["figure.figsize"] = (30,40)
     for i in range(num_imgs):
         if i==1 :
             plt.subplot(num_imgs,col,plt_index),plt.imshow(imgs[i]),plt.title("Original"),plt.xticks([]),plt.yticks([])
@@ -135,7 +182,9 @@ def main():
             plt_index+=1
             #plt.subplot(num_imgs,col,plt_index),plt.imshow(HSV_imgs[i]),plt.title("HSV"),plt.xticks([]),plt.yticks([])
             #plt_index+=1
-            plt.subplot(num_imgs,col,plt_index),plt.imshow(pointBG_imgs[i]),plt.title("pointBG"),plt.xticks([]),plt.yticks([])
+            plt.subplot(num_imgs,col,plt_index),plt.imshow(inrange_imgs[i]),plt.title("pointBG"),plt.xticks([]),plt.yticks([])
+            plt_index+=1
+            plt.subplot(num_imgs,col,plt_index),plt.imshow(locateBG_imgs[i]),plt.title("Eroded"),plt.xticks([]),plt.yticks([])
             plt_index+=1
         else :
             plt.subplot(num_imgs,col,plt_index),plt.imshow(imgs[i]),plt.xticks([]),plt.yticks([])
@@ -144,7 +193,9 @@ def main():
             plt_index+=1
             #plt.subplot(num_imgs,col,plt_index),plt.imshow(HSV_imgs[i]),plt.xticks([]),plt.yticks([])
             #plt_index+=1
-            plt.subplot(num_imgs,col,plt_index),plt.imshow(pointBG_imgs[i]),plt.xticks([]),plt.yticks([])
+            plt.subplot(num_imgs,col,plt_index),plt.imshow(inrange_imgs[i]),plt.xticks([]),plt.yticks([])
+            plt_index+=1
+            plt.subplot(num_imgs,col,plt_index),plt.imshow(locateBG_imgs[i]),plt.xticks([]),plt.yticks([])
             plt_index+=1
     plt.show()
 
