@@ -100,33 +100,38 @@ def locateBG(inrange_img,color):
     # reject small contour (noise)
     for i,cnt in enumerate(contours):
         x,y,w,h = cv.boundingRect(cnt)
-        if(w>=5 and h>=5):
+        if(w>=50 or h>=50):
             OBJS_RECT.append([x,y,w,h]) # [x,y,w,h]
             obj_center = [ (x+(w//2)) , (y+(h//2)) ]
             OBJS_CENTER.append(obj_center) # [x_obj_center, y_obj_center]
             OBJS_DIFF_CENTER.append(abs(IMG_CENTER[0]-obj_center[0])+abs(IMG_CENTER[1]-obj_center[1])) # diff = [ X_IMG_CENTER - x_obj_center, Y_IMG_CENTER - y_obj_center]
-    middlest_RECT = []
-    if(len(OBJS_RECT)==1):
+            '''print("_________________________________________________")
+            print(f"IMG center{IMG_CENTER}")
+            print(f"OBJ center{obj_center}")
+            print(f"x,y,w,h obj{[x,y,w,h]}")
+            print(f"OBJS_DIFF_CENTER center{abs(IMG_CENTER[0]-obj_center[0])+abs(IMG_CENTER[1]-obj_center[1])}")'''
+            
+    # find middlest RECT
+    middlest_RECT = [inrange_img.shape[1]//4,inrange_img.shape[0]//4,IMG_CENTER[0],IMG_CENTER[1]] #in case if not found RECT -> be use default
+    if(len(OBJS_RECT)==1): # if have only one RECT
         middlest_RECT = OBJS_RECT[0]
-    elif (len(OBJS_RECT)>1):
-        min_middle = 0
-        for i,RECT in enumerate(OBJS_RECT):
-            if(OBJS_DIFF_CENTER[i]< min_middle):
-                min_middle = OBJS_DIFF_CENTER[i]
-                middlest_RECT = RECT
-    else :
-        middlest_RECT = [IMG_CENTER[0]] ################# << เขียนถึงนี้
-
-    
-    
-    
-
-    return thres_img
+    elif(len(OBJS_RECT)>1): # find middlest RECT
+        tmp_min_middle = OBJS_DIFF_CENTER[0]
+        for i,val in enumerate(OBJS_DIFF_CENTER):
+            print(f"{val}",end=',')
+            if(val <= tmp_min_middle):
+                tmp_min_middle = val
+                middlest_RECT = OBJS_RECT[i]
+        print(f"select {tmp_min_middle}")
+    cv.rectangle(thres_img,(middlest_RECT[0],middlest_RECT[1]),(middlest_RECT[0]+middlest_RECT[2],middlest_RECT[1]+middlest_RECT[3]),(255,255,255),2)
+    return thres_img,middlest_RECT
     
 
 
 def main():
     global img_path,alpha_value
+    divideHeight = 4
+    divideWidth = 4
     list_files = [f for f in listdir(img_path) if isfile(join(img_path, f))]
     del_lists = []
     for i,fname in enumerate(list_files):
@@ -144,9 +149,9 @@ def main():
     # Read images from lists
     for i,fname in enumerate(list_files):
         tmp_img = cv.imread(img_path+fname)
-        w = tmp_img.shape[0]//8
-        h = tmp_img.shape[1]//8
-        imgs.append(cv.resize(tmp_img,(h,w)))
+        w = tmp_img.shape[0]//divideHeight
+        h = tmp_img.shape[1]//divideWidth
+        imgs.append(cv.resize(tmp_img,(w,h)))
     # Set low contrast
     lowct_imgs = []
     for i,img in enumerate(imgs):
@@ -164,9 +169,19 @@ def main():
         detected_colors.append(tmp_color)
 
     locateBG_imgs = []
+    locateBG_xywh = []
     for i,img in enumerate(inrange_imgs):
         color = detected_colors[i]
-        locateBG_imgs.append(locateBG(img,color))
+        ret_img,ret_xywh = locateBG(img,color)
+        locateBG_imgs.append(ret_img)
+        locateBG_xywh.append(ret_xywh)
+        xywh = locateBG_xywh[i]
+        tl_point = (xywh[0],xywh[1])
+        br_point = (xywh[0]+xywh[2],xywh[1]+xywh[3])
+        #print(tl_point,end=" ")
+        #print(br_point)
+        #cv.rectangle(imgs,tl_point,br_point,(0,255,0),2) # (x,y),(x+w,y+h)
+        #cv.imwrite(img_path+"/seg/"+list_files[i]+"_segment.jpg",imgs[i])
         cv.imwrite(img_path+"/seg/"+list_files[i]+"_segment.jpg",locateBG_imgs[i])
     
     # Display by plt
