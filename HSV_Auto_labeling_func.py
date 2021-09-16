@@ -5,7 +5,7 @@ from os import listdir
 from os.path import isfile, join
 import copy
 
-img_path = './Dataset Medical Waste/black/'
+img_path = './Dataset Medical Waste/Mask/'
 
 alpha_value = .7 # 0.1-1
 
@@ -110,7 +110,6 @@ def locateBG(inrange_img,color):
             print(f"OBJ center{obj_center}")
             print(f"x,y,w,h obj{[x,y,w,h]}")
             print(f"OBJS_DIFF_CENTER center{abs(IMG_CENTER[0]-obj_center[0])+abs(IMG_CENTER[1]-obj_center[1])}")'''
-            
     # find middlest RECT
     middlest_RECT = [inrange_img.shape[1]//4,inrange_img.shape[0]//4,IMG_CENTER[0],IMG_CENTER[1]] #in case if not found RECT -> be use default
     if(len(OBJS_RECT)==1): # if have only one RECT
@@ -118,12 +117,13 @@ def locateBG(inrange_img,color):
     elif(len(OBJS_RECT)>1): # find middlest RECT
         tmp_min_middle = OBJS_DIFF_CENTER[0]
         for i,val in enumerate(OBJS_DIFF_CENTER):
-            print(f"{val}",end=',')
+            #print(f"{val}",end=',')
             if(val <= tmp_min_middle):
                 tmp_min_middle = val
                 middlest_RECT = OBJS_RECT[i]
-        print(f"select {tmp_min_middle}")
-    cv.rectangle(thres_img,(middlest_RECT[0],middlest_RECT[1]),(middlest_RECT[0]+middlest_RECT[2],middlest_RECT[1]+middlest_RECT[3]),(255,255,255),2)
+        #print(f"select {tmp_min_middle}")
+    #cv.rectangle(thres_img,(middlest_RECT[0],middlest_RECT[1]),(middlest_RECT[0]+middlest_RECT[2],middlest_RECT[1]+middlest_RECT[3]),(255,255,255),2)
+
     return thres_img,middlest_RECT
     
 
@@ -178,17 +178,15 @@ def main():
         xywh = locateBG_xywh[i]
         tl_point = (xywh[0],xywh[1])
         br_point = (xywh[0]+xywh[2],xywh[1]+xywh[3])
-        #print(tl_point,end=" ")
-        #print(br_point)
-        #cv.rectangle(imgs,tl_point,br_point,(0,255,0),2) # (x,y),(x+w,y+h)
-        #cv.imwrite(img_path+"/seg/"+list_files[i]+"_segment.jpg",imgs[i])
-        cv.imwrite(img_path+"/seg/"+list_files[i]+"_segment.jpg",locateBG_imgs[i])
+        cv.rectangle(imgs[i],tl_point,br_point,(0,255,0),2) # (x,y),(x+w,y+h)
+        cv.imwrite(img_path+"/seg/"+list_files[i]+"_segment.jpg",imgs[i])
+        #cv.imwrite(img_path+"/seg/"+list_files[i]+"_segment.jpg",locateBG_imgs[i])
     
     # Display by plt
     plt_index = 1
     num_imgs = len(imgs)
     col = 4
-    plt.rcParams["figure.figsize"] = (30,40)
+    '''plt.rcParams["figure.figsize"] = (30,40)
     for i in range(num_imgs):
         if i==1 :
             plt.subplot(num_imgs,col,plt_index),plt.imshow(imgs[i]),plt.title("Original"),plt.xticks([]),plt.yticks([])
@@ -212,7 +210,7 @@ def main():
             plt_index+=1
             plt.subplot(num_imgs,col,plt_index),plt.imshow(locateBG_imgs[i]),plt.xticks([]),plt.yticks([])
             plt_index+=1
-    plt.show()
+    plt.show()'''
 
 
 
