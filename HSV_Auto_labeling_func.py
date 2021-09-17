@@ -5,7 +5,7 @@ from os import listdir
 from os.path import isfile, join
 import copy
 
-img_path = './Dataset Medical Waste/Mask/'
+img_path = './Dataset Medical Waste/black/'
 
 alpha_value = .7 # 0.1-1
 
@@ -18,6 +18,27 @@ diff_thres_black = np.array([350,40,20]) # [70,110,40]  # [0-359,0-255,0-255] <<
 diff_thres_white = np.array([80,40,20])  # [0-359,0-255,0-255] <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 diff_thres_green_cam = np.array([40,100,20])  # [0-359,0-255,0-255] <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 diff_thres_green_mobile = np.array([45,60,40])  # [0-359,0-255,0-255] <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+
+class cvRect:
+    def __init__(self, xywh):
+        self.x = xywh[0]
+        self.y = xywh[1]
+        self.w = xywh[2]
+        self.h = xywh[3]
+        self.xmin = self.x
+        self.ymin = self.y
+        self.xmax = self.x + self.w
+        self.ymax = self.y + self.h
+    def area(self):
+        return self.w * self.h
+    def tl(self):
+        return [self.x,self.y]
+    def br(self):
+        return [self.x+self.w,self.y+self.h]
+    def center(self):
+        return [self.x+(self.w//2),self.y+(self.h//2)]
+    def get_xywh(self):
+        return  [self.x,self.y,self.w,self.h]
 
 
 def pointBG(src_img):
@@ -123,7 +144,11 @@ def locateBG(inrange_img,color):
                 middlest_RECT = OBJS_RECT[i]
         #print(f"select {tmp_min_middle}")
     #cv.rectangle(thres_img,(middlest_RECT[0],middlest_RECT[1]),(middlest_RECT[0]+middlest_RECT[2],middlest_RECT[1]+middlest_RECT[3]),(255,255,255),2)
-
+    # if middlest obj has area >90% (false positive) all white image
+    allArea = inrange_img.shape[1]*inrange_img.shape[0] # w * h
+    objArea = middlest_RECT[2] * middlest_RECT[2] # w * h
+    if(objArea/allArea>0.9):
+        [inrange_img.shape[1]//4,inrange_img.shape[0]//4,IMG_CENTER[0],IMG_CENTER[1]] #in case all white image -> be use default
     return thres_img,middlest_RECT
     
 
