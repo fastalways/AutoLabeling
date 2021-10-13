@@ -5,7 +5,7 @@ from os import listdir
 from os.path import isfile, join
 import copy
 
-img_path = './Dataset Medical Waste/black/'
+img_path = './Dataset Medical Waste/Mask/'
 
 alpha_value = .7 # 0.1-1
 
@@ -205,7 +205,7 @@ def main():
         br_point = (xywh[0]+xywh[2],xywh[1]+xywh[3])
         cv.rectangle(imgs[i],tl_point,br_point,(0,255,0),2) # (x,y),(x+w,y+h)
         cv.imwrite(img_path+"/seg/"+list_files[i]+"_segment.jpg",imgs[i])
-        #cv.imwrite(img_path+"/seg/"+list_files[i]+"_segment.jpg",locateBG_imgs[i])
+        cv.imwrite(img_path+"/seg/"+list_files[i]+"_segment.png",locateBG_imgs[i])
     
     # Display by plt
     plt_index = 1
