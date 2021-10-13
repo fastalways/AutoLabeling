@@ -5,7 +5,9 @@ from os import listdir
 from os.path import isfile, join
 import copy
 
-img_path = './Dataset Medical Waste/Mask/'
+waste_name = 'Mask'
+img_path = 'D:/Dataset Medical Waste/' + waste_name + '/'
+img_crop_path = 'D:/Dataset Medical Waste(Cropped)/' + waste_name + '/'
 
 alpha_value = .7 # 0.1-1
 
@@ -19,6 +21,8 @@ diff_thres_white = np.array([80,40,20])  # [0-359,0-255,0-255] <<<<<<<<<<<<<<<<<
 diff_thres_green_cam = np.array([40,100,20])  # [0-359,0-255,0-255] <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 diff_thres_green_mobile = np.array([45,60,40])  # [0-359,0-255,0-255] <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
+padW = 6 # เติมช่องว่างรอบวัตถุด้านแนวนอน
+padH = 6 # เติมช่องว่างรอบวัตถุด้านแนวตั้ง
 class cvRect:
     def __init__(self, xywh):
         self.x = xywh[0]
@@ -119,20 +123,15 @@ def locateBG(inrange_img,color):
     IMG_CENTER = [inrange_img.shape[1]//2,inrange_img.shape[0]//2] # [x_center, y_center]
     OBJS_DIFF_CENTER = []
     # reject small contour (noise)
-    for i,cnt in enumerate(contours):
-        x,y,w,h = cv.boundingRect(cnt)
-        if(w>=50 or h>=50):
-            OBJS_RECT.append([x,y,w,h]) # [x,y,w,h]
-            obj_center = [ (x+(w//2)) , (y+(h//2)) ]
-            OBJS_CENTER.append(obj_center) # [x_obj_center, y_obj_center]
-            OBJS_DIFF_CENTER.append(abs(IMG_CENTER[0]-obj_center[0])+abs(IMG_CENTER[1]-obj_center[1])) # diff = [ X_IMG_CENTER - x_obj_center, Y_IMG_CENTER - y_obj_center]
-            '''print("_________________________________________________")
-            print(f"IMG center{IMG_CENTER}")
-            print(f"OBJ center{obj_center}")
-            print(f"x,y,w,h obj{[x,y,w,h]}")
-            print(f"OBJS_DIFF_CENTER center{abs(IMG_CENTER[0]-obj_center[0])+abs(IMG_CENTER[1]-obj_center[1])}")'''
+    for i,cnt in enumerate(contours): 
+        tmpRect = cvRect( cv.boundingRect(cnt) ) 
+        if(tmpRect.w>=50 or tmpRect.h>=50):
+            OBJS_RECT.append(cvRect( cv.boundingRect(cnt) )) # [x,y,w,h]
+            OBJS_CENTER.append(tmpRect.center()) # [x_obj_center, y_obj_center]
+            OBJS_DIFF_CENTER.append(abs(IMG_CENTER[0]-tmpRect.center()[0])+abs(IMG_CENTER[1]-tmpRect.center()[1])) # diff = [ X_IMG_CENTER - x_obj_center, Y_IMG_CENTER - y_obj_center]
+    (hImage,wImage) = inrange_img.shape[:2]
     # find middlest RECT
-    middlest_RECT = [inrange_img.shape[1]//4,inrange_img.shape[0]//4,IMG_CENTER[0],IMG_CENTER[1]] #in case if not found RECT -> be use default
+    middlest_RECT = cvRect([0,0,wImage,hImage]) #in case if not found RECT -> be use default
     if(len(OBJS_RECT)==1): # if have only one RECT
         middlest_RECT = OBJS_RECT[0]
     elif(len(OBJS_RECT)>1): # find middlest RECT
@@ -144,11 +143,24 @@ def locateBG(inrange_img,color):
                 middlest_RECT = OBJS_RECT[i]
         #print(f"select {tmp_min_middle}")
     #cv.rectangle(thres_img,(middlest_RECT[0],middlest_RECT[1]),(middlest_RECT[0]+middlest_RECT[2],middlest_RECT[1]+middlest_RECT[3]),(255,255,255),2)
+    
+    # Space Padding เติมขอบข้าง
+    if( (middlest_RECT.x - padW) >=0 ): # check ว่าเกินด้านซ้ายของภาพมั้ย
+        middlest_RECT.x = middlest_RECT.x - padW
+        middlest_RECT.w = middlest_RECT.w + padW
+    if( (middlest_RECT.y - padH) >=0 ): # check ว่าเกินด้านบนของภาพมั้ย
+        middlest_RECT.y = middlest_RECT.y - padH
+        middlest_RECT.h = middlest_RECT.h + padH
+    if( (middlest_RECT.x + middlest_RECT.w + padW) < wImage): # check ว่าเกินด้านขวาของภาพมั้ย
+        middlest_RECT.w = middlest_RECT.w + padW
+    if( (middlest_RECT.y + middlest_RECT.h + padH) < hImage): # check ว่าเกินด้านล่างของภาพมั้ย
+        middlest_RECT.h = middlest_RECT.h + padH
+
     # if middlest obj has area >90% (false positive) all white image
     allArea = inrange_img.shape[1]*inrange_img.shape[0] # w * h
-    objArea = middlest_RECT[2] * middlest_RECT[2] # w * h
+    objArea = middlest_RECT.w * middlest_RECT.h # w * h
     if(objArea/allArea>0.9):
-        [inrange_img.shape[1]//4,inrange_img.shape[0]//4,IMG_CENTER[0],IMG_CENTER[1]] #in case all white image -> be use default
+        middlest_RECT = cvRect([0,0,wImage,hImage]) #in case all white image -> be use default
     return thres_img,middlest_RECT
     
 
@@ -174,8 +186,8 @@ def main():
     # Read images from lists
     for i,fname in enumerate(list_files):
         tmp_img = cv.imread(img_path+fname)
-        w = tmp_img.shape[0]//divideHeight
-        h = tmp_img.shape[1]//divideWidth
+        h = tmp_img.shape[0]//divideHeight
+        w = tmp_img.shape[1]//divideWidth
         imgs.append(cv.resize(tmp_img,(w,h)))
     # Set low contrast
     lowct_imgs = []
@@ -201,11 +213,13 @@ def main():
         locateBG_imgs.append(ret_img)
         locateBG_xywh.append(ret_xywh)
         xywh = locateBG_xywh[i]
-        tl_point = (xywh[0],xywh[1])
-        br_point = (xywh[0]+xywh[2],xywh[1]+xywh[3])
-        cv.rectangle(imgs[i],tl_point,br_point,(0,255,0),2) # (x,y),(x+w,y+h)
-        cv.imwrite(img_path+"/seg/"+list_files[i]+"_segment.jpg",imgs[i])
-        cv.imwrite(img_path+"/seg/"+list_files[i]+"_segment.png",locateBG_imgs[i])
+        tl_point = (xywh.x,xywh.y)
+        br_point = (xywh.x+xywh.w,xywh.y+xywh.h)
+        #cv.rectangle(imgs[i],tl_point,br_point,(0,255,0),2) # (x,y),(x+w,y+h)
+        cropped_image = imgs[i][xywh.y:xywh.y+xywh.h ,xywh.x:xywh.x+xywh.w]
+        cv.imwrite(img_crop_path+list_files[i],cropped_image)
+        #cv.imwrite(img_path+"/seg/"+list_files[i]+"_segment.jpg",imgs[i])
+        #cv.imwrite(img_path+"/seg/"+list_files[i]+"_segment.png",locateBG_imgs[i])
     
     # Display by plt
     plt_index = 1
