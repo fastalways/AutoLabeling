@@ -50,7 +50,6 @@ waste_name_list = [
     'WingedInfusionSet',
 ]
 
-DiscardBufferingImageForShow = True
 
 waste_name = waste_name_list[0]
 dataset_path = 'D:/Dataset Medical Waste/'
@@ -234,81 +233,61 @@ def ProcessInEachFolder():
     print(f"After del other file ext:{list_files}")
     imgs = []
     #  ,
-    # Read images from lists
+    # Read Each images from lists
     for i,fname in enumerate(list_files):
+        imgs.clear()
         tmp_img = cv.imread(img_path+fname)
         h = tmp_img.shape[0]//divideHeight
         w = tmp_img.shape[1]//divideWidth
         imgs.append(cv.resize(tmp_img,(w,h)))
-    # Set low contrast
-    lowct_imgs = []
-    for i,img in enumerate(imgs):
-        lowct_imgs.append(cv.convertScaleAbs(img,alpha=alpha_value, beta=0))
-    # Convert to HSV
-    HSV_imgs = []
-    for i,img in enumerate(lowct_imgs):
-        HSV_imgs.append(cv.cvtColor(img, cv.COLOR_BGR2HSV_FULL))
-
-    if DiscardBufferingImageForShow: # <------------------------------------------------------------- Save memory
+        # Set low contrast
+        lowct_imgs = []
         lowct_imgs.clear()
-
-    # Call func pointBG
-    inrange_imgs = []
-    detected_colors = []
-    for i,img in enumerate(HSV_imgs):
-        tmp_point_img,tmp_color = pointBG(img)
-        inrange_imgs.append(tmp_point_img)
-        detected_colors.append(tmp_color)
-
-    if DiscardBufferingImageForShow: # <------------------------------------------------------------- Save memory
+        for j,jimg in enumerate(imgs):
+            lowct_imgs.append(cv.convertScaleAbs(jimg,alpha=alpha_value, beta=0))
+        # Convert to HSV
+        HSV_imgs = []
         HSV_imgs.clear()
+        for k,kimg in enumerate(lowct_imgs):
+            HSV_imgs.append(cv.cvtColor(kimg, cv.COLOR_BGR2HSV_FULL))
 
-    locateBG_imgs = []
-    locateBG_xywh = []
-    for i,img in enumerate(inrange_imgs):
-        color = detected_colors[i]
-        ret_img,ret_xywh = locateBG(img,color)
-        locateBG_imgs.append(ret_img)
-        locateBG_xywh.append(ret_xywh)
-        xywh = locateBG_xywh[i]
-        tl_point = (xywh.x,xywh.y)
-        br_point = (xywh.x+xywh.w,xywh.y+xywh.h)
-        #cv.rectangle(imgs[i],tl_point,br_point,(0,255,0),2) # (x,y),(x+w,y+h)
-        cropped_image = imgs[i][xywh.y:xywh.y+xywh.h ,xywh.x:xywh.x+xywh.w]
-        imgName,imgExtension = os.path.splitext(fname)
-        cv.imwrite(img_crop_path+imgName+'.png',cropped_image)
-        #cv.imwrite(img_path+"/seg/"+list_files[i]+"_segment.jpg",imgs[i])
-        #cv.imwrite(img_path+"/seg/"+list_files[i]+"_segment.png",locateBG_imgs[i])
 
-    # Display by plt
-    plt_index = 1
-    num_imgs = len(imgs)
-    col = 4
-    '''plt.rcParams["figure.figsize"] = (30,40)
-    for i in range(num_imgs):
-        if i==1 :
-            plt.subplot(num_imgs,col,plt_index),plt.imshow(imgs[i]),plt.title("Original"),plt.xticks([]),plt.yticks([])
-            plt_index+=1
-            plt.subplot(num_imgs,col,plt_index),plt.imshow(lowct_imgs[i]),plt.title("LowContrast"),plt.xticks([]),plt.yticks([])
-            plt_index+=1
-            #plt.subplot(num_imgs,col,plt_index),plt.imshow(HSV_imgs[i]),plt.title("HSV"),plt.xticks([]),plt.yticks([])
-            #plt_index+=1
-            plt.subplot(num_imgs,col,plt_index),plt.imshow(inrange_imgs[i]),plt.title("pointBG"),plt.xticks([]),plt.yticks([])
-            plt_index+=1
-            plt.subplot(num_imgs,col,plt_index),plt.imshow(locateBG_imgs[i]),plt.title("Eroded"),plt.xticks([]),plt.yticks([])
-            plt_index+=1
-        else :
-            plt.subplot(num_imgs,col,plt_index),plt.imshow(imgs[i]),plt.xticks([]),plt.yticks([])
-            plt_index+=1
-            plt.subplot(num_imgs,col,plt_index),plt.imshow(lowct_imgs[i]),plt.xticks([]),plt.yticks([])
-            plt_index+=1
-            #plt.subplot(num_imgs,col,plt_index),plt.imshow(HSV_imgs[i]),plt.xticks([]),plt.yticks([])
-            #plt_index+=1
-            plt.subplot(num_imgs,col,plt_index),plt.imshow(inrange_imgs[i]),plt.xticks([]),plt.yticks([])
-            plt_index+=1
-            plt.subplot(num_imgs,col,plt_index),plt.imshow(locateBG_imgs[i]),plt.xticks([]),plt.yticks([])
-            plt_index+=1
-    plt.show()'''
+        # Call func pointBG
+        inrange_imgs = []
+        detected_colors = []
+        inrange_imgs.clear()
+        detected_colors.clear()
+        for l,limg in enumerate(HSV_imgs):
+            tmp_point_img,tmp_color = pointBG(limg)
+            inrange_imgs.append(tmp_point_img)
+            detected_colors.append(tmp_color)
+
+
+        locateBG_imgs = []
+        locateBG_xywh = []
+        locateBG_imgs.clear()
+        locateBG_xywh.clear()
+        for m,mimg in enumerate(inrange_imgs):
+            color = detected_colors[m]
+            ret_img,ret_xywh = locateBG(mimg,color)
+            locateBG_imgs.append(ret_img)
+            locateBG_xywh.append(ret_xywh)
+            xywh = locateBG_xywh[m]
+            tl_point = (xywh.x,xywh.y)
+            br_point = (xywh.x+xywh.w,xywh.y+xywh.h)
+            #cv.rectangle(imgs[m],tl_point,br_point,(0,255,0),2) # (x,y),(x+w,y+h)
+            cropped_image = jimg[xywh.y:xywh.y+xywh.h ,xywh.x:xywh.x+xywh.w]
+            croppedPosString = str(xywh.x) + '\t' + str(xywh.y) +'\t' + str(xywh.w) + '\t' + str(xywh.h) # x   y   w   h
+            imgName,imgExtension = os.path.splitext(fname)
+            croppedPosFile = open(img_path+imgName+".txt", "w")
+            n = croppedPosFile.write(croppedPosString)
+            croppedPosFile.close()
+            #cv.imwrite(img_crop_path+imgName+'.png',cropped_image)
+
+            #cv.imwrite(img_path+"/seg/"+fname+"_segment.jpg",imgs[i])
+            #cv.imwrite(img_path+"/seg/"+fname+"_segment.png",locateBG_imgs[i])
+
+
 
 def main():
     global waste_name,img_path,img_crop_path,dataset_path,dataset_crop_path,waste_name_list
