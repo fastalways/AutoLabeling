@@ -5,11 +5,27 @@ from os import listdir
 from os.path import isfile, join
 import copy
 
-waste_name = 'WingedInfusionSet'
-img_path = 'D:/Dataset Medical Waste/' + waste_name + '/'
-img_crop_path = 'D:/Dataset Medical Waste(Cropped)/' + waste_name + '/'
+waste_name_list = [
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+    '',
+]
 
+
+waste_name = waste_name_list[0]
+dataset_path = 'D:/Dataset Medical Waste/'
+dataset_crop_path = 'D:/Dataset Medical Waste(Cropped)/'
 alpha_value = .7 # 0.1-1
+
+
+img_path = dataset_path + waste_name + '/'
+img_crop_path = dataset_crop_path + waste_name + '/'
 
 mean_black = np.array([26,11,53])
 mean_white = np.array([50,13,117])
@@ -165,10 +181,10 @@ def locateBG(inrange_img,color):
     
 
 
-def main():
-    global img_path,alpha_value
-    divideHeight = 4
-    divideWidth = 4
+def ProcessInEachFolder():
+    global img_path,img_crop_path,alpha_value,waste_name
+    divideHeight = 1
+    divideWidth = 1
     list_files = [f for f in listdir(img_path) if isfile(join(img_path, f))]
     del_lists = []
     for i,fname in enumerate(list_files):
@@ -251,7 +267,17 @@ def main():
             plt_index+=1
     plt.show()'''
 
-
+def main():
+    global waste_name,img_path,img_crop_path,dataset_path,dataset_crop_path,waste_name_list
+    for name in waste_name_list:
+        waste_name = name
+        img_path = dataset_path + waste_name + '/'
+        img_crop_path = dataset_crop_path + waste_name + '/'
+        my_path = Path(img_crop_path)
+        if not my_path.exists(): # เช็คว่า path existed ?
+            os.mkdir(img_crop_path)
+        ProcessInEachFolder()
+    print('------------------------------Finished---------------------------------')
 
 
 if __name__ == "__main__":
