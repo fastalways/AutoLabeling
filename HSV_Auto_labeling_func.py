@@ -5,7 +5,7 @@ from os import listdir
 from os.path import isfile, join
 import copy
 
-waste_name = 'Mask'
+waste_name = 'WingedInfusionSet'
 img_path = 'D:/Dataset Medical Waste/' + waste_name + '/'
 img_crop_path = 'D:/Dataset Medical Waste(Cropped)/' + waste_name + '/'
 
