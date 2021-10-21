@@ -58,8 +58,8 @@ folder_name_list = [
 
 
 folder_name = folder_name_list[0]
-dataset_path = 'D:/Dataset Medical Waste/'
-dataset_crop_path = 'D:/Dataset Medical Waste(Cropped)/'
+dataset_path = 'D:/DatasetMedicalWaste/'
+dataset_crop_path = 'D:/DatasetMedicalWaste(Cropped)/'
 
 if(AutomaticallyFoldersListing):
     folder_name_list = []
@@ -89,7 +89,7 @@ class cvRect:
 
 
 for i,name in enumerate(folder_name_list):
-    print(f'{i} : {name} \t\t',end='')
+    print(f'{i} : {name} \t\t\t\t\t',end='')
     if((i+1)%3==0):
         print('') # newline
 
@@ -123,10 +123,10 @@ if(len(list_files)<=0):
 print(f"File List ext:{list_files}")
 print("============= How to use =============")
 print("Drag Mouse to crop image")
-print("Enter to save cropped box")
+print("Enter/Spacebar to save cropped box")
 print("Esc to cancel cropped box")
-print("←/↑ goto previous image")
-print("→/↓ goto next image")
+print("←/↑ or a goto previous image")
+print("→/↓ or d goto next image")
 print("q Exit program")
 mouseFirstPoint = []
 mouseLastPoint = []
@@ -225,19 +225,19 @@ while(True):
     # key control
     if(key==ord('q')): # 'q' -> exit
         break;
-    elif(key==2424832 or key==2490368): # ←/↑ goto previous image 
+    elif(key==2424832 or key==2490368 or key==ord('a')): # ←/↑ or a goto previous image 
         print("--")
         img_index-=1
         img_index_changed=True
         if(img_index<0):
             img_index=0
-    elif(key==2555904 or key==2621440): # →/↓ goto next image
+    elif(key==2555904 or key==2621440 or key==ord('d')): # →/↓ or d goto next image
         print("++")
         img_index+=1
         img_index_changed=True
         if(img_index>=len(list_files)):
             img_index=len(list_files)-1
-    elif(key==13): # Enter -> save cropped
+    elif(key==13 or key==32): # Enter or Spacebar -> save cropped
         if cropRectOK :
             cropped_image = original_image[cropRect.y:cropRect.y+cropRect.h ,cropRect.x:cropRect.x+cropRect.w]
             cv.imwrite(img_crop_path+imgName+'.png',cropped_image)
