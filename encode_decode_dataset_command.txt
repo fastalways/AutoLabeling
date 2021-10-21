@@ -1,2 +1,2 @@
 openssl enc -e -aes-256-cbc -pass pass:coe18402 -in '.\DatasetMedicalWaste_Cropped.tar.gz' -out '.\DatasetMedicalWaste_Cropped.tar.gz.dat'
-openssl enc -d -aes-256-cbc -pass pass:coe18402 -in '.\DatasetMedicalWaste_Cropped.tar.gz.dat' -out '.\DatasetMedicalWaste_Cropped.tar.gz'
+openssl enc -d -md md5 -aes-256-cbc -pass pass:coe18402 -in '.\DatasetMedicalWaste_Cropped.tar.gz.dat' -out '.\DatasetMedicalWaste_Cropped.tar.gz'
