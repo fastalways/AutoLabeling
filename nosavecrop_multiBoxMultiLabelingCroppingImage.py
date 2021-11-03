@@ -192,7 +192,7 @@ class SimpleSelectLabel():
         self.window.geometry("1800x950")
         i = 0 # row_index
         iLabel = 0 # index of Label
-        nLabel = len(folder_name_list)
+        nLabel = len(labelList)
         while(1):
             self.window.columnconfigure(i, weight=1, minsize=90)
             self.window.rowconfigure(i, weight=1, minsize=50)
@@ -262,6 +262,7 @@ def loadLabelsFromFile():
     global imgName
     txt_path = img_path+imgName+'.txt'
     xywhs = []
+    labels = []
     if os.path.exists(txt_path): # เช็คว่า path existed ?
         with open(txt_path) as file:
             lines = file.readlines()
@@ -270,8 +271,9 @@ def loadLabelsFromFile():
             for xywh_str in xywh_strs:
                 if(len(xywh_str)==5):
                     (xc,yc,wc,hc) = int(xywh_str[1]),int(xywh_str[2]),int(xywh_str[3]),int(xywh_str[4])
+                    labels.append(xywh_str[0])
                     xywhs.append(cvRect([xc,yc,wc,hc]))
-    return xywhs
+    return xywhs,labels
 
 def saveLabelsToFile():
     global imgName,cropRect
@@ -289,7 +291,7 @@ cv.waitKey(250)
 cv.namedWindow("OriginalShow",cv.WINDOW_NORMAL)
 cv.setMouseCallback("OriginalShow", mouse_handler)
 #cv.namedWindow("CroppedShow",cv.WINDOW_NORMAL)
-
+refreshLabel = False
 lockCropping = 'unlock'
 cropRectOK = False
 while(True):
@@ -309,17 +311,18 @@ while(True):
         textThickness = wImg//500
         cv.putText(show_original_image, imgName, putNamePos, cv.FONT_HERSHEY_SIMPLEX, textSize, (0,0,255),textThickness)
         temp_show_original_image = show_original_image.copy()
-        marked_cvRects = loadLabelsFromFile()
-        for marked_cvRect in marked_cvRects:
+        marked_cvRects,marked_Label = loadLabelsFromFile()
+        for idx,marked_cvRect in enumerate(marked_cvRects):
             xc,yc,wc,hc = marked_cvRect.xywh()
             cv.rectangle(show_original_image, (xc,yc), (xc+wc,yc+hc), (0,0,255),4)
+            cv.putText(show_original_image,marked_Label[idx], (xc,yc),cv.FONT_HERSHEY_COMPLEX_SMALL,wImg/500, (0,0,255),wImg//500)
         #if cropped_image is None:
         #    cv.imshow("CroppedShow",np.zeros((300,300,3),dtype=np.uint8))
     if lockCropping == 'unlock':
         if(mouseDragging):
             show_original_image = temp_show_original_image.copy()
             cv.rectangle(show_original_image, mouseFirstPoint, mouseLastPoint, (128,0,255),10)
-        elif(mouseFinished):
+        elif(mouseFinished or refreshLabel):
             show_original_image = temp_show_original_image.copy()
             if mouseFirstPoint[0]>mouseLastPoint[0]: # Swap X
                 tmpFPX = mouseFirstPoint[0]
@@ -332,7 +335,10 @@ while(True):
             cropRect = cvRect([mouseFirstPoint[0],mouseFirstPoint[1],abs(mouseLastPoint[0] - mouseFirstPoint[0]),abs(mouseLastPoint[1] - mouseFirstPoint[1])])
             if (cropRect.area()) >= 1500:
                 cropRectOK = True
-                cv.rectangle(show_original_image, cropRect.tl(), cropRect.br(), (255,0,255),10)
+                (hImg,wImg) = show_original_image.shape[:2]
+                cv.rectangle(show_original_image, cropRect.tl(), cropRect.br(), (255,0,255),wImg//200)
+                cv.putText(show_original_image,currentLabel, cropRect.tl(),cv.FONT_HERSHEY_COMPLEX_SMALL,wImg/500, (255,0,255),wImg//500)
+            refreshLabel = False
             mouseFinished = False
 
 
@@ -352,12 +358,22 @@ while(True):
         print("--")
         img_index-=1
         img_index_changed=True
+        cropRectOK = False
+        mouseFinished = False
+        mouseDragging = False
+        mouseFirstPoint = [0,0]
+        mouseLastPoint = [9,9]
         if(img_index<0):
             img_index=0
     elif(key==2555904 or key==2621440 or key==ord('d')): # →/↓ or d goto next image
         print("++")
         img_index+=1
         img_index_changed=True
+        cropRectOK = False
+        mouseFinished = False
+        mouseDragging = False
+        mouseFirstPoint = [0,0]
+        mouseLastPoint = [9,9]
         if(img_index>=len(list_files)):
             img_index=len(list_files)-1
     elif(key==13 or key==32): # Enter or Spacebar -> save cropped
@@ -368,6 +384,10 @@ while(True):
             img_index_changed = True
             print(f"Saved CroppedImage of {imgName}")
     elif(key==3014656):
+        (hImg,wImg) = show_original_image.shape[:2]
+        cv.putText(show_original_image,"Confirm deletion in commandline!", (50,600),cv.FONT_HERSHEY_COMPLEX_SMALL,wImg/500, (0,242,255),wImg//500)
+        cv.imshow("OriginalShow",show_original_image)
+        cv.waitKey(1000)
         confirm_del = input('Do you want to delete all crop in '+imgName+' ?(Y/n)')
         if(confirm_del=='y' or confirm_del=='Y'):
             os.remove(img_path+imgName+".txt")
@@ -375,16 +395,17 @@ while(True):
             img_index_changed=True
             mouseFinished = False
             mouseDragging = False
-            mouseFirstPoint = []
-            mouseLastPoint = []
+            mouseFirstPoint = [0,0]
+            mouseLastPoint = [9,9]
             print(f"Deleted All Cropped Object")
+        img_index_changed=True
     elif(key==27): # Enter -> cancel cropped
         cropRectOK = False
         img_index_changed=True
         mouseFinished = False
         mouseDragging = False
-        mouseFirstPoint = []
-        mouseLastPoint = []
+        mouseFirstPoint = [0,0]
+        mouseLastPoint = [9,9]
         print(f"Cancelled Cropped")
     elif(key==ord('w') or key==ord('W')):
         # Also disable croppring
@@ -402,5 +423,9 @@ while(True):
         cv.setMouseCallback("OriginalShow", mouse_handler)
         mouseLastPoint = oldMouseLastPoint
         lockCropping = 'unlock'
+        if(cropRectOK):
+            refreshLabel = True
+        else :
+            img_index_changed = True
         
 

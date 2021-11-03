@@ -56,7 +56,7 @@ class SimpleSelectLabel():
         self.window.geometry("1800x900")
         i = 0 # row_index
         iLabel = 0 # index of Label
-        nLabel = len(folder_name_list)
+        nLabel = len(labelList)
         while(1):
             self.window.columnconfigure(i, weight=1, minsize=90)
             self.window.rowconfigure(i, weight=1, minsize=50)
