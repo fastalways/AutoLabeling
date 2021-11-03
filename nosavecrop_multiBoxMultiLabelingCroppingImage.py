@@ -5,11 +5,57 @@ import os
 import sys
 from os import listdir,mkdir
 from os.path import isfile, join, exists
+import tkinter as tk
 import copy
 import re
 
 '''==============  Automatically Folders Listing  ================'''
 AutomaticallyFoldersListing = True # True = Auto   / False = Manually
+
+'''  Label Listing  '''
+label_name_list = [
+    '1WayConnectorforFoley',
+    '2WayConnectorforFoley',
+    '2WayFoleyCatheter',
+    '3WayConnectorforFoley',
+    '3Waystopcock',
+    'AlcoholBottle',
+    'AlcoholPad',
+    'CottonBall',
+    'CottonSwap',
+    'Dilator',
+    'DisposableInfusionSet',
+    'ExtensionTube',
+    'FaceShield',
+    'FootWear',
+    'FrontLoadSyringe',
+    'GauzePad',
+    'Glove',
+    'GuideWire',
+    'LiquidBottle',
+    'Mask',
+    'NasalCannula',
+    'Needle',
+    'NGTube',
+    'OxygenMask',
+    'PharmaceuticalProduct',
+    'Pill',
+    'PillBottle',
+    'PPESuit',
+    'PrefilledHumidifier',
+    'PressureConnectingTube',
+    'ReusableHumidifier',
+    'SodiumChlorideBag',
+    'SterileHumidifierAdapter',
+    'SurgicalBlade',
+    'SurgicalCap',
+    'SurgicalSuit',
+    'Syringe',
+    'TrachealTube',
+    'UrineBag',
+    'Vaccinebottle',
+    'WingedInfusionSet',
+]
 
 '''  Manually Folders Listing  '''
 folder_name_list = [
@@ -125,28 +171,70 @@ print(f"File List ext:{list_files}")
 print("============= How to use =============")
 print("Drag Mouse to crop image")
 print("Enter/Spacebar to save cropped box")
-print("Esc to cancel cropped box")
+print("Del to remove all cropped boxes in the image")
+print("w or / to select label")
+print("Esc to cancel (a) cropped box")
 print("←/↑ or a goto previous image")
 print("→/↓ or d goto next image")
 print("q Exit program")
-mouseFirstPoint = []
-mouseLastPoint = []
+mouseFirstPoint = [0,0]
+mouseLastPoint = [9,9]
 mouseFinished = False
 mouseDragging = False
+lockCropping = 'lock'
+
+'''GUI Select Label'''
+changedLabel = None
+class SimpleSelectLabel():
+    def __init__(self,labelList,nCol=6):
+        numInRow = nCol
+        self.window = tk.Tk()
+        self.window.geometry("1800x950")
+        i = 0 # row_index
+        iLabel = 0 # index of Label
+        nLabel = len(folder_name_list)
+        while(1):
+            self.window.columnconfigure(i, weight=1, minsize=90)
+            self.window.rowconfigure(i, weight=1, minsize=50)
+            for j in range(0, numInRow):
+                frame = tk.Frame(
+                    master=self.window,
+                    relief=tk.RAISED,
+                    borderwidth=1
+                )
+                frame.grid(row=i, column=j, padx=10, pady=10)
+                label = tk.Label(master=frame, text=labelList[iLabel])
+                label.config(font=('Helvatical bold',18))
+                txtLabel = labelList[iLabel]
+                label.bind("<Button-1>",lambda event,text=txtLabel:self.hLabelClick(event,text))
+                iLabel+=1 # fecth next LabelS
+                label.pack(padx=3, pady=3)
+                if(iLabel>=nLabel):
+                    break
+            i+=1 # new row
+            if(iLabel>=nLabel):
+                break
+        self.window.mainloop()
+    def hLabelClick(self,event,text):
+        global changedLabel
+        changedLabel = text
+        self.window.quit()
+        self.window.destroy()
 
 def mouse_handler(event, x, y, flags, param):
-    global mouseFirstPoint,mouseLastPoint,mouseFinished,mouseDragging
-    if event == cv.EVENT_LBUTTONDOWN:
-        mouseFirstPoint = [x,y]
-        mouseDragging = True
-        mouseLastPoint = [x+10,y+10]
-    elif event == cv.EVENT_LBUTTONUP:
-        mouseDragging = False
-        mouseLastPoint = [x,y]
-        mouseFinished = True
-    else :
-        if mouseDragging :
-            mouseLastPoint  = [x,y]
+    global mouseFirstPoint,mouseLastPoint,mouseFinished,mouseDragging,lockCropping
+    if lockCropping == 'unlock': # if unlocked
+        if event == cv.EVENT_LBUTTONDOWN:
+            mouseFirstPoint = [x,y]
+            mouseDragging = True
+            mouseLastPoint = [x+10,y+10]
+        elif event == cv.EVENT_LBUTTONUP:
+            mouseDragging = False
+            mouseLastPoint = [x,y]
+            mouseFinished = True
+        else :
+            if mouseDragging :
+                mouseLastPoint  = [x,y]
 
 
 img_index = 0
@@ -159,9 +247,13 @@ cropRect = []
 imgName = ''
 imgExtension = ''
 savedMessage = ''
-cv.namedWindow("OriginalShow",cv.WINDOW_NORMAL)
-cv.setMouseCallback("OriginalShow", mouse_handler)
-#cv.namedWindow("CroppedShow",cv.WINDOW_NORMAL)
+
+
+currentLabel = label_name_list[0]
+SimpleSelectLabel(label_name_list)
+if changedLabel!=None:
+    currentLabel = changedLabel
+    print(f"selected -> {currentLabel}")
 lines = []
 xywh_str = []
 key = -1
@@ -187,12 +279,19 @@ def saveLabelsToFile():
     croppedPosString = ''
     if os.path.exists(txt_path): # เช็คว่า path existed ?
         croppedPosString = '\n'
-    croppedPosString += folder_name+'\t'
+    croppedPosString += currentLabel+'\t'
     croppedPosString += str(cropRect.x) + '\t' + str(cropRect.y) +'\t' + str(cropRect.w) + '\t' + str(cropRect.h) # x   y   w   h
     croppedPosFile = open(txt_path, "a+")
     n = croppedPosFile.write(croppedPosString)
     croppedPosFile.close()
 
+cv.waitKey(250)
+cv.namedWindow("OriginalShow",cv.WINDOW_NORMAL)
+cv.setMouseCallback("OriginalShow", mouse_handler)
+#cv.namedWindow("CroppedShow",cv.WINDOW_NORMAL)
+
+lockCropping = 'unlock'
+cropRectOK = False
 while(True):
     if(img_index_changed): 
         #cropped_image = None
@@ -206,8 +305,8 @@ while(True):
         #cropped_image = cv.imread(img_crop_path+imgName+'.png')
         (hImg,wImg) = show_original_image.shape[:2]
         putNamePos = (20,300)
-        textSize = hImg/400
-        textThickness = hImg//500
+        textSize = wImg/500
+        textThickness = wImg//500
         cv.putText(show_original_image, imgName, putNamePos, cv.FONT_HERSHEY_SIMPLEX, textSize, (0,0,255),textThickness)
         temp_show_original_image = show_original_image.copy()
         marked_cvRects = loadLabelsFromFile()
@@ -216,25 +315,25 @@ while(True):
             cv.rectangle(show_original_image, (xc,yc), (xc+wc,yc+hc), (0,0,255),4)
         #if cropped_image is None:
         #    cv.imshow("CroppedShow",np.zeros((300,300,3),dtype=np.uint8))
-            
-    if(mouseDragging):
-        show_original_image = temp_show_original_image.copy()
-        cv.rectangle(show_original_image, mouseFirstPoint, mouseLastPoint, (128,0,255),10)
-    elif(mouseFinished):
-        show_original_image = temp_show_original_image.copy()
-        if mouseFirstPoint[0]>mouseLastPoint[0]: # Swap X
-            tmpFPX = mouseFirstPoint[0]
-            mouseFirstPoint[0] = mouseLastPoint[0]
-            mouseLastPoint[0] = tmpFPX
-        if mouseFirstPoint[1]>mouseLastPoint[1]: # Swap Y
-            tmpFPY = mouseFirstPoint[1]
-            mouseFirstPoint[1] = mouseLastPoint[1]
-            mouseLastPoint[1] = tmpFPY
-        cropRect = cvRect([mouseFirstPoint[0],mouseFirstPoint[1],abs(mouseLastPoint[0] - mouseFirstPoint[0]),abs(mouseLastPoint[1] - mouseFirstPoint[1])])
-        if (cropRect.area()) >= 1500:
-            cropRectOK = True
-            cv.rectangle(show_original_image, cropRect.tl(), cropRect.br(), (255,0,255),10)
-        mouseFinished = False
+    if lockCropping == 'unlock':
+        if(mouseDragging):
+            show_original_image = temp_show_original_image.copy()
+            cv.rectangle(show_original_image, mouseFirstPoint, mouseLastPoint, (128,0,255),10)
+        elif(mouseFinished):
+            show_original_image = temp_show_original_image.copy()
+            if mouseFirstPoint[0]>mouseLastPoint[0]: # Swap X
+                tmpFPX = mouseFirstPoint[0]
+                mouseFirstPoint[0] = mouseLastPoint[0]
+                mouseLastPoint[0] = tmpFPX
+            if mouseFirstPoint[1]>mouseLastPoint[1]: # Swap Y
+                tmpFPY = mouseFirstPoint[1]
+                mouseFirstPoint[1] = mouseLastPoint[1]
+                mouseLastPoint[1] = tmpFPY
+            cropRect = cvRect([mouseFirstPoint[0],mouseFirstPoint[1],abs(mouseLastPoint[0] - mouseFirstPoint[0]),abs(mouseLastPoint[1] - mouseFirstPoint[1])])
+            if (cropRect.area()) >= 1500:
+                cropRectOK = True
+                cv.rectangle(show_original_image, cropRect.tl(), cropRect.br(), (255,0,255),10)
+            mouseFinished = False
 
 
     cv.imshow("OriginalShow",show_original_image)
@@ -287,4 +386,21 @@ while(True):
         mouseFirstPoint = []
         mouseLastPoint = []
         print(f"Cancelled Cropped")
+    elif(key==ord('w') or key==ord('W')):
+        # Also disable croppring
+        lockCropping = 'lock'
+        oldMouseLastPoint = mouseLastPoint
+        cv.setMouseCallback("OriginalShow",lambda *args : None)
+        cv.destroyAllWindows()
+        changedLabel = None
+        SimpleSelectLabel(label_name_list)
+        if changedLabel!=None:
+            currentLabel = changedLabel
+            print(f"selected -> {currentLabel}") #print(changedLabel)
+        cv.waitKey(250)
+        cv.namedWindow("OriginalShow",cv.WINDOW_NORMAL)
+        cv.setMouseCallback("OriginalShow", mouse_handler)
+        mouseLastPoint = oldMouseLastPoint
+        lockCropping = 'unlock'
+        
 

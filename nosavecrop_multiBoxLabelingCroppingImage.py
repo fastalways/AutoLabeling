@@ -206,8 +206,8 @@ while(True):
         #cropped_image = cv.imread(img_crop_path+imgName+'.png')
         (hImg,wImg) = show_original_image.shape[:2]
         putNamePos = (20,300)
-        textSize = hImg/400
-        textThickness = hImg//500
+        textSize = wImg/500
+        textThickness = wImg//500
         cv.putText(show_original_image, imgName, putNamePos, cv.FONT_HERSHEY_SIMPLEX, textSize, (0,0,255),textThickness)
         temp_show_original_image = show_original_image.copy()
         marked_cvRects = loadLabelsFromFile()
