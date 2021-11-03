@@ -338,6 +338,13 @@ while(True):
                 (hImg,wImg) = show_original_image.shape[:2]
                 cv.rectangle(show_original_image, cropRect.tl(), cropRect.br(), (255,0,255),wImg//200)
                 cv.putText(show_original_image,currentLabel, cropRect.tl(),cv.FONT_HERSHEY_COMPLEX_SMALL,wImg/500, (255,0,255),wImg//500)
+            else :
+                cropRectOK = False
+                img_index_changed=True
+                mouseFinished = False
+                mouseDragging = False
+                mouseFirstPoint = [0,0]
+                mouseLastPoint = [9,9]
             refreshLabel = False
             mouseFinished = False
 
@@ -382,6 +389,11 @@ while(True):
             #cv.imwrite(img_crop_path+imgName+'.png',cropped_image)
             saveLabelsToFile()
             img_index_changed = True
+            cropRectOK = False
+            mouseFinished = False
+            mouseDragging = False
+            mouseFirstPoint = [0,0]
+            mouseLastPoint = [9,9]
             print(f"Saved CroppedImage of {imgName}")
     elif(key==3014656):
         (hImg,wImg) = show_original_image.shape[:2]
