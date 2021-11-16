@@ -269,16 +269,25 @@ while(True):
             img_index_changed = True
             print(f"Saved CroppedImage of {imgName}")
     elif(key==3014656):
-        confirm_del = input('Do you want to delete all crop in '+imgName+' ?(Y/n)')
-        if(confirm_del=='y' or confirm_del=='Y'):
-            os.remove(img_path+imgName+".txt")
-            cropRectOK = False
-            img_index_changed=True
-            mouseFinished = False
-            mouseDragging = False
-            mouseFirstPoint = []
-            mouseLastPoint = []
-            print(f"Deleted All Cropped Object")
+        # under Construction
+        (hImg,wImg) = show_original_image.shape[:2]
+        textSize = wImg/700
+        textThickness = wImg//700
+        cv.putText(show_original_image, 'Do you want to delete all crop?(Y/n)', (10,700), cv.FONT_HERSHEY_SIMPLEX,textSize,(0,0,255),textThickness)
+        while(True):
+            key_del = cv.waitKeyEx(100)
+            cv.imshow("OriginalShow",show_original_image)
+            if(key_del!=-1 and key_del!=3014656):
+                if(key_del==ord('y') or key_del==ord('Y')):
+                    os.remove(img_path+imgName+".txt")
+                    cropRectOK = False
+                    mouseFinished = False
+                    mouseDragging = False
+                    mouseFirstPoint = []
+                    mouseLastPoint = []
+                    print(f"Deleted All Cropped Object")
+                img_index_changed=True
+                break
     elif(key==27): # Enter -> cancel cropped
         cropRectOK = False
         img_index_changed=True
