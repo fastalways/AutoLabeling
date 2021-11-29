@@ -162,7 +162,7 @@ def ProcessInEachFolder():
             if((cropped_image!=None).any()):
                 cv.imwrite(save_crop_image_path,cropped_image)
             else:
-                print(f'Error: cropping in {single_image_path} [{xyhw.x},{xyhw.y},{xyhw.w},{xyhw.h}]')
+                print(f'Error: cropping in {single_image_path} [{xyhw.x},{xyhw.y},{xyhw.w},{xyhw.h}] skipped {save_crop_image_path}')
             countingList[id_label] = countingList[id_label] + 1 # increase counter
 
 def main():

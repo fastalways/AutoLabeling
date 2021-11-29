@@ -231,7 +231,12 @@ while(True):
             mouseFirstPoint[1] = mouseLastPoint[1]
             mouseLastPoint[1] = tmpFPY
         cropRect = cvRect([mouseFirstPoint[0],mouseFirstPoint[1],abs(mouseLastPoint[0] - mouseFirstPoint[0]),abs(mouseLastPoint[1] - mouseFirstPoint[1])])
-        if (cropRect.area()) >= 1500:
+        (hImg,wImg) = show_original_image.shape[:2]
+        if(cropRect.x<0):
+            cropRect.x=0
+        if(cropRect.y<0):
+            cropRect.y=0
+        if ( (cropRect.area() >= 1500) and (cropRect.w+cropRect.x <= wImg-1) and (cropRect.h+cropRect.y <= hImg-1) ): ## large_enough & not bigger than the original_image
             cropRectOK = True
             cv.rectangle(show_original_image, cropRect.tl(), cropRect.br(), (255,0,255),10)
         mouseFinished = False
