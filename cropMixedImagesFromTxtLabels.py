@@ -55,10 +55,10 @@ label_name_list = [
 ]
 
 
-dataset_path = 'D:/DatasetMedicalWasteBelt/v1'
-dataset_output_crop_path = 'D:/DatasetMedicalWasteBeltCropped/v1'
-img_path = dataset_path + '/' + object_name + '/'
-img_crop_path = dataset_output_crop_path + '/' + object_name + '/'
+dataset_path = 'D:/DatasetMedicalWasteTestLabeled/belt'
+dataset_output_crop_path = 'D:/DatasetMedicalWasteTestLabeledCropped/belt'
+img_path = dataset_path + '/'
+img_crop_path = dataset_output_crop_path + '/'
 paddingVertical = 0
 paddingHorizontal = 0
 countingList = [1] * len(label_name_list)
@@ -151,7 +151,11 @@ def ProcessInEachFolder():
                 cropped_image = cropping_img[newPadded.y:newPadded.y+newPadded.h, newPadded.x:newPadded.x+newPadded.w]
             else:
                 cropped_image = cropping_img[xyhw.y:xyhw.y+xyhw.h, xyhw.x:xyhw.x+xyhw.w]
-            cv.imwrite(save_crop_image_path,cropped_image)
+            #print(save_crop_image_path)
+            if((cropped_image!=None).any()):
+                cv.imwrite(save_crop_image_path,cropped_image)
+            else:
+                print(f'Error: cropping in {single_image_path} [{xyhw.x},{xyhw.y},{xyhw.w},{xyhw.h}]')
             countingList[id_label] = countingList[id_label] + 1 # increase counter
 
 def main():
@@ -162,7 +166,7 @@ def main():
         if not os.path.exists(img_crop_path): # เช็คว่า path existed ?
             os.mkdir(img_crop_path)
     print(f'Processing in Folder : {dataset_path}')
-    img_path = dataset_path
+    img_path = dataset_path + '/'
     ProcessInEachFolder()
     print('------------------------------Finished---------------------------------')
 
