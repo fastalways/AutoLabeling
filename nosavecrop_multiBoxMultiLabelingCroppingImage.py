@@ -104,8 +104,8 @@ folder_name_list = [
 
 
 folder_name = folder_name_list[0]
-dataset_path = 'D:/DatasetMedicalWasteTest/'
-dataset_crop_path = 'D:/DatasetMedicalWasteTest/'
+dataset_path = 'D:/DatasetMedicalWasteTestLabeled/'
+dataset_crop_path = 'D:/DatasetMedicalWasteTestLabeled/'
 
 if(AutomaticallyFoldersListing):
     folder_name_list = []
@@ -156,7 +156,7 @@ del_lists = []
 for i,fname in enumerate(list_files):
     last = len(fname) - 1
     file_ext = fname[-3:]
-    if(file_ext!='JPG' and file_ext!='jpg' and file_ext!='JPEG'): # and file_ext!='JPG'
+    if(file_ext!='JPG' and file_ext!='jpg'): # and file_ext!='JPG'
         del_lists.append(fname) # mark as delete
         #print(file_ext)
 for val in del_lists:

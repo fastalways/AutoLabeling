@@ -58,8 +58,8 @@ folder_name_list = [
 
 
 folder_name = folder_name_list[0]
-dataset_path = 'D:/DatasetMedicalWasteTest/indoor/'
-dataset_crop_path = 'D:/DatasetMedicalWasteTestCropped/indoor/'
+dataset_path = 'D:/DatasetMedicalWasteTestLabeled/indoor/'
+dataset_crop_path = 'D:/DatasetMedicalWasteTestCroppedLabeled/indoor/'
 
 if(AutomaticallyFoldersListing):
     folder_name_list = []
