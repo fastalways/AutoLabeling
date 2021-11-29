@@ -6,7 +6,7 @@ from os import listdir,mkdir
 from os.path import isfile, join, exists
 import copy
 
-waste_name_list = [
+object_name_list = [
     '1WayConnectorforFoley',
     '2WayConnectorforFoley',
     '2WayFoleyCatheter',
@@ -52,14 +52,14 @@ waste_name_list = [
 
 DiscardBufferingImageForShow = True
 
-waste_name = waste_name_list[0]
+object_name = object_name_list[0]
 dataset_path = 'D:/Dataset Medical Waste/'
 dataset_crop_path = 'D:/Dataset Medical Waste(Cropped)/'
 alpha_value = .7 # 0.1-1
 
 
-img_path = dataset_path + waste_name + '/'
-img_crop_path = dataset_crop_path + waste_name + '/'
+img_path = dataset_path + object_name + '/'
+img_crop_path = dataset_crop_path + object_name + '/'
 
 mean_black = np.array([26,11,53])
 mean_white = np.array([50,13,117])
@@ -216,7 +216,7 @@ def locateBG(inrange_img,color):
 
 
 def ProcessInEachFolder():
-    global img_path,img_crop_path,alpha_value,waste_name
+    global img_path,img_crop_path,alpha_value,object_name
     divideHeight = 1
     divideWidth = 1
     list_files = []
@@ -311,14 +311,14 @@ def ProcessInEachFolder():
     plt.show()'''
 
 def main():
-    global waste_name,img_path,img_crop_path,dataset_path,dataset_crop_path,waste_name_list
-    for name in waste_name_list:
-        waste_name = name
-        img_path = dataset_path + waste_name + '/'
-        img_crop_path = dataset_crop_path + waste_name + '/'
+    global object_name,img_path,img_crop_path,dataset_path,dataset_crop_path,object_name_list
+    for name in object_name_list:
+        object_name = name
+        img_path = dataset_path + object_name + '/'
+        img_crop_path = dataset_crop_path + object_name + '/'
         if not os.path.exists(img_crop_path): # เช็คว่า path existed ?
             os.mkdir(img_crop_path)
-        print(f'Processing in Folder : {waste_name}')
+        print(f'Processing in Folder : {object_name}')
         ProcessInEachFolder()
     print('------------------------------Finished---------------------------------')
 
