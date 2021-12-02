@@ -180,8 +180,10 @@ def locateBG(inrange_img,color):
             OBJS_CENTER.append(tmpRect.center()) # [x_obj_center, y_obj_center]
             OBJS_DIFF_CENTER.append(abs(IMG_CENTER[0]-tmpRect.center()[0])+abs(IMG_CENTER[1]-tmpRect.center()[1])) # diff = [ X_IMG_CENTER - x_obj_center, Y_IMG_CENTER - y_obj_center]
     (hImage,wImage) = inrange_img.shape[:2]
+    #define defalut rect
+    defalutRect = cvRect([300,300,wImage-200,hImage-200])
     # find middlest RECT
-    middlest_RECT = cvRect([0,0,wImage,hImage]) #in case if not found RECT -> be use default
+    middlest_RECT = defalutRect #in case if not found RECT -> be use default
     if(len(OBJS_RECT)==1): # if have only one RECT
         middlest_RECT = OBJS_RECT[0]
     elif(len(OBJS_RECT)>1): # find middlest RECT
@@ -210,7 +212,7 @@ def locateBG(inrange_img,color):
     allArea = inrange_img.shape[1]*inrange_img.shape[0] # w * h
     objArea = middlest_RECT.w * middlest_RECT.h # w * h
     if(objArea/allArea>0.9):
-        middlest_RECT = cvRect([0,0,wImage,hImage]) #in case all white image -> be use default
+        middlest_RECT = defalutRect #in case all white image -> be use default
     return thres_img,middlest_RECT
     
 
