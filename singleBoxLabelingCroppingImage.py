@@ -59,7 +59,7 @@ folder_name_list = [
 
 folder_name = folder_name_list[0]
 dataset_path = 'D:/DatasetMedicalWaste/'
-dataset_crop_path = 'D:/DatasetMedicalWaste(Cropped)/'
+dataset_crop_path = 'D:/DatasetMedicalWasteCropped/'
 
 if(AutomaticallyFoldersListing):
     folder_name_list = []

@@ -11,7 +11,7 @@ waste_name_list = [
     # '2WayConnectorforFoley',
     # '2WayFoleyCatheter',
     # '3WayConnectorforFoley',
-    '3Waystopcock',
+    # '3Waystopcock',
     # 'AlcoholBottle',
     # 'AlcoholPad',
     # 'BootCover',
@@ -26,7 +26,7 @@ waste_name_list = [
     # 'Glove',
     # 'GuideWire',
     # 'LiquidBottle',
-    'Mask',
+    # 'Mask',
     # 'NasalCannula',
     # 'Needle',
     # 'NGTube',
@@ -41,7 +41,7 @@ waste_name_list = [
     # 'SodiumChlorideBag',
     # 'SterileHumidifierAdapter',
     # 'SurgicalBlade',
-    # 'SurgicalCap',
+     'SurgicalCap',
     # 'SurgicalSuit',
     # 'Syringe',
     # 'TrachealTube',
@@ -52,8 +52,8 @@ waste_name_list = [
 
 
 waste_name = waste_name_list[0]
-dataset_path = 'D:/Dataset Medical Waste/'
-dataset_crop_path = 'D:/Dataset Medical Waste(Cropped)/'
+dataset_path = 'D:/DatasetMedicalWaste/'
+dataset_crop_path = 'D:/DatasetMedicalWasteCropped/'
 alpha_value = .7 # 0.1-1
 
 

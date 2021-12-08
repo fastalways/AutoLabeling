@@ -57,8 +57,8 @@ object_name = folder_name_list[0]
 '''==============  Automatically Folders Listing  ================'''
 AutomaticallyFoldersListing = True # True = Auto   / False = Manually
 
-dataset_path = 'D:/DatasetMedicalWasteTestLabeled/indoor'
-dataset_output_crop_path = 'D:/DatasetMedicalWasteTestLabeledCropped/indoor'
+dataset_path = 'D:/DatasetMedicalWasteTestLabeled/outdoor'
+dataset_output_crop_path = 'D:/DatasetMedicalWasteTestLabeledCropped/outdoor'
 img_path = dataset_path + '/' + object_name + '/'
 img_crop_path = dataset_output_crop_path + '/' + object_name + '/'
 paddingVertical = 0
