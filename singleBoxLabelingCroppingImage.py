@@ -187,8 +187,9 @@ while(True):
                 lines = file.readlines()
                 lines = [line.rstrip() for line in lines]
                 xywh_str = re.split(r'\t+', lines[0])
-            if(len(xywh_str)==4):
-                (xc,yc,wc,hc) = int(xywh_str[0]),int(xywh_str[1]),int(xywh_str[2]),int(xywh_str[3])
+            if(len(xywh_str)==5):
+                class_name = xywh_str[0]
+                (xc,yc,wc,hc) = int(xywh_str[1]),int(xywh_str[2]),int(xywh_str[3]),int(xywh_str[4])
                 cv.rectangle(show_original_image, (xc,yc), (xc+wc,yc+hc), (0,0,255),4)
         if cropped_image is None:
             cv.imshow("CroppedShow",np.zeros((300,300,3),dtype=np.uint8))
@@ -241,7 +242,7 @@ while(True):
         if cropRectOK :
             cropped_image = original_image[cropRect.y:cropRect.y+cropRect.h ,cropRect.x:cropRect.x+cropRect.w]
             cv.imwrite(img_crop_path+imgName+'.png',cropped_image)
-            croppedPosString = str(cropRect.x) + '\t' + str(cropRect.y) +'\t' + str(cropRect.w) + '\t' + str(cropRect.h) # x   y   w   h
+            croppedPosString = folder_name+'\t'+str(cropRect.x) + '\t' + str(cropRect.y) +'\t' + str(cropRect.w) + '\t' + str(cropRect.h) # class_name x   y   w   h
             croppedPosFile = open(img_path+imgName+".txt", "w")
             n = croppedPosFile.write(croppedPosString)
             croppedPosFile.close()
