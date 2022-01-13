@@ -24,7 +24,7 @@ class cvRect:
     def br(self):
         return [self.x+self.w,self.y+self.h]
     def center(self):
-        return [self.x+(self.w//2),self.y+(self.h//2)]
+        return [self.x+(self.w/2),self.y+(self.h/2)]
     def get_xywh(self):
         return  [self.x,self.y,self.w,self.h]
 
@@ -54,10 +54,51 @@ def makeLabelYOLO(xywh,nameClass,IMAGE_SIZE):
     WIDTH_NORM = xywh.w/IMAGE_WIDTH 
     HEIGHT_NORM = xywh.h/IMAGE_HEIGHT
     return "%d %.6f %.6f %.6f %.6f" % (Label_ID,X_CENTER_NORM,Y_CENTER_NORM,WIDTH_NORM,HEIGHT_NORM)
+
+def cvtXYWH2CreateMLCoor(xywh,verbose=0):
+    global cvRect
+    # Modify from https://github.com/tzutalin/labelImg/blob/master/libs/create_ml_io.py
+    x1, y1, x2, y2 = (xywh.tl()[0],xywh.tl()[1],xywh.br()[0],xywh.br()[1])
+    if x1 < x2:
+        x_min = x1
+        x_max = x2
+    else:
+        x_min = x2
+        x_max = x1
+    if y1 < y2:
+        y_min = y1
+        y_max = y2
+    else:
+        y_min = y2
+        y_max = y1
+    width = x_max - x_min
+    if width < 0:
+        width = width * -1
+    height = y_max - y_min
+    if height < 0:
+        height = height * -1
+    # x and y from center of rect
+    x = x_min + width / 2
+    y = y_min + height / 2
+    if(verbose==1):
+        print(f"{x},{y},{width},{height}")
+    return cvRect([x,y,width,height])
+
 def main():
     global cvRect
+    print("YOLO")
+    TestRect = cvRect([23,20,137-23,111-20])
+    print(makeLabelYOLO(TestRect,'testclass1',[273,312]))
     TestRect = cvRect([182,66,296-182,159-66])
-    print(makeLabelYOLO(TestRect,'testclass4',[273,312]))
+    print(makeLabelYOLO(TestRect,'testclass2',[273,312]))
+    TestRect = cvRect([18,158,167-18,264-158])
+    print(makeLabelYOLO(TestRect,'testclass3',[273,312]))
+    print("CreateML")
+    cvtXYWH2CreateMLCoor(cvRect([23,20,137-23,111-20]),verbose=1)
+    cvtXYWH2CreateMLCoor(cvRect([182,66,296-182,159-66]),verbose=1)
+    cvtXYWH2CreateMLCoor(cvRect([18,158,167-18,264-158]),verbose=1)
+    print("PascalVOC")
+    print("same x,y,w,h but have more info in xml")
 
 if __name__=="__main__":
     main()
