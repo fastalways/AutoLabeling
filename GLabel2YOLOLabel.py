@@ -8,9 +8,16 @@ import re
 import copy
 
 from numpy.lib.shape_base import split
+#DIRs = ["D:/DatasetMedicalWasteControlledEnvironment/","D:/DatasetMedicalWasteTestLabeled/belt/"] # TrainSet
+#DIR_to_save = "E:/DatasetMedicalWasteYolo2/train/"
 
-DIRs = ["D:/DatasetMedicalWaste/","D:/DatasetMedicalWasteTestLabeled/belt/","D:/DatasetMedicalWasteTestLabeled/indoor/","D:/DatasetMedicalWasteTestLabeled/outdoor/"]
-DIR_to_save = "E:/DatasetMedicalWasteYolo/"
+#DIRs = ["D:/DatasetMedicalWasteTestLabeled/outdoor/"] # ValidateSet
+#DIR_to_save = "E:/DatasetMedicalWasteYolo2/valid/"
+
+DIRs = ["D:/DatasetMedicalWasteTestLabeled/indoor/"] # TestSet
+DIR_to_save = "E:/DatasetMedicalWasteYolo2/test/"
+
+
 SAVE_IMAGE_EXTENSION = "png"
 TEST_MODE = False # True->write on disk False->only testing
 class cvRect:
@@ -102,7 +109,7 @@ def main():
     # Read GLabel *.txt file
     global DIRs,DIR_to_save,SAVE_IMAGE_EXTENSION
     for DIR in DIRs: # access in each path (DIR)
-        print(f"Enter to precess in  -------->  {DIR}")
+        print(f"Enter to process in  -------->  {DIR}")
         for name_folder in os.listdir(DIR): # access each image/label in a path (DIR)
             print(f'Working in {name_folder}')
             if os.path.isdir(os.path.join(DIR, name_folder)):
