@@ -8,14 +8,11 @@ import re
 import copy
 
 from numpy.lib.shape_base import split
-#DIRs = ["D:/DatasetMedicalWasteControlledEnvironment/","D:/DatasetMedicalWasteTestLabeled/belt/"] # TrainSet
-#DIR_to_save = "E:/DatasetMedicalWasteYolo2/train/"
+DIRs = ["D:/DatasetMedicalWasteControlledEnvironment/","D:/DatasetMedicalWasteTestLabeled/belt/","D:/DatasetMedicalWasteTestLabeled/outdoor/"] # TrainSet
+DIR_to_save = "D:/DatasetMedicalWasteYolo2/data/train/"
 
-#DIRs = ["D:/DatasetMedicalWasteTestLabeled/outdoor/"] # ValidateSet
-#DIR_to_save = "E:/DatasetMedicalWasteYolo2/valid/"
-
-DIRs = ["D:/DatasetMedicalWasteTestLabeled/indoor/"] # TestSet
-DIR_to_save = "E:/DatasetMedicalWasteYolo2/test/"
+#DIRs = ["D:/DatasetMedicalWasteTestLabeled/indoor/"] # (ValidateSet)TestSet
+#DIR_to_save = "D:/DatasetMedicalWasteYolo2/data/test/"
 
 
 SAVE_IMAGE_EXTENSION = "png"
