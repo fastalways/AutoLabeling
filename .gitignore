@@ -1,4 +1,4 @@
 **/*.jpg
 **/*.JPG
 **/*.png
-TempTrainYoloV5/yolov5
+TempTrainYoloV5/yolov5/*
