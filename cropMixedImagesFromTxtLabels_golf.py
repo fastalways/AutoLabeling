@@ -11,52 +11,16 @@ import re
 
 '''  Label Listing  '''
 label_name_list = [
-    '1WayConnectorforFoley',
-    '2WayConnectorforFoley',
-    '2WayFoleyCatheter',
-    '3WayConnectorforFoley',
-    '3Waystopcock',
-    'AlcoholBottle',
-    'AlcoholPad',
-    'BootCover',
-    'CottonBall',
-    'CottonSwap',
-    'Dilator',
-    'DisposableInfusionSet',
-    'ExtensionTube',
-    'FaceShield',
-    'FrontLoadSyringe',
-    'GauzePad',
-    'Glove',
-    'GuideWire',
-    'LiquidBottle',
-    'Mask',
-    'NasalCannula',
-    'Needle',
-    'NGTube',
-    'OxygenMask',
-    'PharmaceuticalProduct',
-    'Pill',
-    'PillBottle',
-    'PPESuit',
-    'PrefilledHumidifier',
-    'PressureConnectingTube',
-    'ReusableHumidifier',
-    'SodiumChlorideBag',
-    'SterileHumidifierAdapter',
-    'SurgicalBlade',
-    'SurgicalCap',
-    'SurgicalSuit',
-    'Syringe',
-    'TrachealTube',
-    'UrineBag',
-    'Vaccinebottle',
-    'WingedInfusionSet',
+    'glass',
+    'metal',
+    'paper',
+    'plastic',
+    'other',
 ]
 
 
-dataset_path = 'D:/DatasetMedicalWasteTestLabeled/belt'
-dataset_output_crop_path = 'D:/DatasetMedicalWasteTestLabeledCropped/belt'
+dataset_path = 'D:/RecycleWasteDataset/other/'
+dataset_output_crop_path = 'D:/RecycleWasteDatasetCropped/'
 img_path = dataset_path + '/'
 img_crop_path = dataset_output_crop_path + '/'
 paddingVertical = 0
@@ -107,8 +71,8 @@ def ProcessInEachFolder():
     del_lists = []
     for i,fname in enumerate(list_files):
         last = len(fname) - 1
-        file_ext = fname[-3:]
-        if(file_ext!='txt'):
+        file_ext = fname[-4:]
+        if(file_ext!='anno'):
             del_lists.append(fname) # mark as delete
             #print(file_ext)
     for val in del_lists:
@@ -118,7 +82,7 @@ def ProcessInEachFolder():
     for i,fname in enumerate(list_files):
         single_image_path = ''
         single_image_name = img_path+fname
-        single_image_name = single_image_name[0:len(single_image_name)-4]
+        single_image_name = single_image_name[0:len(single_image_name)-5]
         single_image_path_jpg = single_image_name + '.jpg'
         single_image_path_png = single_image_name + '.png'
         single_image_path_JPG_BIG = single_image_name + '.JPG'

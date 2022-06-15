@@ -146,7 +146,7 @@ def ProcessInEachFolder():
             label = labels[idx]
             id_label = folder_name_list.index(label)
             # crop
-            save_crop_image_path = dataset_output_crop_path + '/' + label + '/' + label + '_' + str(countingList[id_label]) + '.png'
+            save_crop_image_path = dataset_output_crop_path + '/' + label + '/' + label + '_' + str(countingList[id_label]).zfill(5) + '.png'
             newPadded = cvRect([xyhw.x-paddingHorizontal,xyhw.y-paddingVertical,xyhw.w+(paddingHorizontal*2),xyhw.h+(paddingVertical*2)])
             #check valid
             padding_valid = True

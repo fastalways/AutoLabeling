@@ -14,98 +14,22 @@ AutomaticallyFoldersListing = True # True = Auto   / False = Manually
 
 '''  Label Listing  '''
 label_name_list = [
-    '1WayConnectorforFoley',
-    '2WayConnectorforFoley',
-    '2WayFoleyCatheter',
-    '3WayConnectorforFoley',
-    '3Waystopcock',
-    'AlcoholBottle',
-    'AlcoholPad',
-    'BootCover',
-    'CottonBall',
-    'CottonSwap',
-    'Dilator',
-    'DisposableInfusionSet',
-    'ExtensionTube',
-    'FaceShield',
-    'FrontLoadSyringe',
-    'GauzePad',
-    'Glove',
-    'GuideWire',
-    'LiquidBottle',
-    'Mask',
-    'NasalCannula',
-    'Needle',
-    'NGTube',
-    'OxygenMask',
-    'PharmaceuticalProduct',
-    'Pill',
-    'PillBottle',
-    'PPESuit',
-    'PrefilledHumidifier',
-    'PressureConnectingTube',
-    'ReusableHumidifier',
-    'SodiumChlorideBag',
-    'SterileHumidifierAdapter',
-    'SurgicalBlade',
-    'SurgicalCap',
-    'SurgicalSuit',
-    'Syringe',
-    'TrachealTube',
-    'UrineBag',
-    'Vaccinebottle',
-    'WingedInfusionSet',
+    'glass',
+    'metal',
+    'paper',
+    'plastic',
+    'other',
 ]
 
 '''  Manually Folders Listing  '''
 folder_name_list = [
-    # '1WayConnectorforFoley',
-    # '2WayConnectorforFoley',
-    # '2WayFoleyCatheter',
-    # '3WayConnectorforFoley',
-    '3Waystopcock',
-    # 'AlcoholBottle',
-    # 'AlcoholPad',
-    # 'BootCover',
-    # 'CottonBall',
-    # 'CottonSwap',
-    # 'Dilator',
-    # 'DisposableInfusionSet',
-    # 'ExtensionTube',
-    # 'FaceShield',
-    # 'FrontLoadSyringe',
-    # 'GauzePad',
-    # 'Glove',
-    # 'GuideWire',
-    # 'LiquidBottle',
-    'Mask',
-    # 'NasalCannula',
-    # 'Needle',
-    # 'NGTube',
-    # 'OxygenMask',
-    # 'PharmaceuticalProduct',
-    # 'Pill',
-    # 'PillBottle',
-    # 'PPESuit',
-    # 'PrefilledHumidifier',
-    # 'PressureConnectingTube',
-    # 'ReusableHumidifier',
-    # 'SodiumChlorideBag',
-    # 'SterileHumidifierAdapter',
-    # 'SurgicalBlade',
-    # 'SurgicalCap',
-    # 'SurgicalSuit',
-    # 'Syringe',
-    # 'TrachealTube',
-    # 'UrineBag',
-    # 'Vaccinebottle',
-    # 'WingedInfusionSet',
+    ''#'training_images'
 ]
 
 
 folder_name = folder_name_list[0]
-dataset_path = 'D:/DatasetMedicalWasteTestLabeled/'
-dataset_crop_path = 'D:/DatasetMedicalWasteTestLabeled/'
+dataset_path = 'D:/RecycleWasteDataset/'
+#dataset_crop_path = 'D:/DatasetMedicalWasteTestLabeled/'
 
 if(AutomaticallyFoldersListing):
     folder_name_list = []
@@ -147,7 +71,7 @@ if(select_folder_id<0 or select_folder_id>=len(folder_name_list)):
 folder_name = folder_name_list[select_folder_id]
 print(f'Fetch image in -> {folder_name}')
 img_path = dataset_path + folder_name + '/'
-img_crop_path = dataset_crop_path + folder_name + '/'
+#img_crop_path = dataset_crop_path + folder_name + '/'
 
 
 list_files = []
@@ -260,7 +184,7 @@ key = -1
 
 def loadLabelsFromFile():
     global imgName
-    txt_path = img_path+imgName+'.txt'
+    txt_path = img_path+imgName+'.anno'
     xywhs = []
     labels = []
     if os.path.exists(txt_path): # เช็คว่า path existed ?
@@ -277,7 +201,7 @@ def loadLabelsFromFile():
 
 def saveLabelsToFile():
     global imgName,cropRect
-    txt_path = img_path+imgName+'.txt'
+    txt_path = img_path+imgName+'.anno'
     croppedPosString = ''
     if os.path.exists(txt_path): # เช็คว่า path existed ?
         croppedPosString = '\n'
@@ -306,7 +230,7 @@ while(True):
         imgName,imgExtension = os.path.splitext(list_files[img_index]) 
         #cropped_image = cv.imread(img_crop_path+imgName+'.png')
         (hImg,wImg) = show_original_image.shape[:2]
-        putNamePos = (20,300)
+        putNamePos = (20,30)
         textSize = wImg/500
         textThickness = wImg//500
         cv.putText(show_original_image, imgName, putNamePos, cv.FONT_HERSHEY_SIMPLEX, textSize, (0,0,255),textThickness)
@@ -407,7 +331,7 @@ while(True):
         cv.waitKey(1000)
         confirm_del = input('Do you want to delete all crop in '+imgName+' ?(Y/n)')
         if(confirm_del=='y' or confirm_del=='Y'):
-            os.remove(img_path+imgName+".txt")
+            os.remove(img_path+imgName+".anno")
             cropRectOK = False
             img_index_changed=True
             mouseFinished = False
